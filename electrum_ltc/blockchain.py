@@ -33,20 +33,16 @@ from .util import bfh, bh2u, with_lock
 from .simple_config import SimpleConfig
 from .logging import get_logger, Logger
 
-try:
-    import scrypt
-    getPoWHash = lambda x: scrypt.hash(x, x, N=1024, r=1, p=1, buflen=32)
-except ImportError:
-    util.print_msg("Warning: package scrypt not available; synchronization could be very slow")
-    from .scrypt import scrypt_1024_1_1_80 as getPoWHash
 
+import scrypt
+getPoWHash = lambda x: scrypt.hash(x, x, N=(2 << 10), r=1, p=1, buflen=32)
+
+import allium_hash
 
 _logger = get_logger(__name__)
 
 HEADER_SIZE = 80  # bytes
-
-# see https://github.com/bitcoin/bitcoin/blob/feedb9c84e72e4fff489810a2bbeec09bcda5763/src/chainparams.cpp#L76
-MAX_TARGET = 0x00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+MAX_TARGET = 0x00000FFFFF000000000000000000000000000000000000000000000000000000
 
 
 class MissingHeader(Exception):
@@ -92,8 +88,10 @@ def hash_raw_header(header: str) -> str:
     return hash_encode(sha256d(bfh(header)))
 
 def pow_hash_header(header):
-    return hash_encode(getPoWHash(bfh(serialize_header(header))))
-
+    if header.get('block_height') <= 58670:
+        return hash_encode(getPoWHash(bfh(serialize_header(header))))
+    else:
+        return hash_encode(allium_hash.getPoWHash(bfh(serialize_header(header))))
 
 # key: blockhash hex at forkpoint
 # the chain at some key is the best chain that includes the given hash
@@ -323,7 +321,7 @@ class Blockchain(Logger):
         num = len(data) // HEADER_SIZE
         start_height = index * 2016
         prev_hash = self.get_hash(start_height - 1)
-        target = self.get_target(index-1)
+        headers = {}
         for i in range(num):
             height = start_height + i
             try:
@@ -332,6 +330,8 @@ class Blockchain(Logger):
                 expected_header_hash = None
             raw_header = data[i*HEADER_SIZE : (i+1)*HEADER_SIZE]
             header = deserialize_header(raw_header, index*2016 + i)
+            headers[header.get('block_height')] = header
+            target = self.get_target(index*2016 + i, headers)
             self.verify_header(header, prev_hash, target, expected_header_hash)
             prev_hash = hash_header(header)
 
@@ -533,65 +533,84 @@ class Blockchain(Logger):
             return ts
         return self.read_header(height).get('timestamp')
 
-    def get_target(self, index: int) -> int:
-        # compute target from chunk x, used in chunk x+1
+    def convbignum(self,bits):
+        MM = 256*256*256
+        a = bits%MM
+        if a < 0x8000:
+            a *= 256
+        target = (a) * pow(2, 8 * (bits//MM - 3))
+        return target
+
+    def get_target(self, height : int, chain=None) -> int:
+        # current difficulty formula, dash - DarkGravity v3, written by Evan Duffield - evan@dash.org 
+        # https://github.com/wakiyamap/electrum-mona/blob/master/lib/blockchain.py#L334
         if constants.net.TESTNET:
             return 0
-        if index == -1:
+        last = chain.get(height - 1)
+        if last is None:
+            last = self.read_header(height - 1)
+
+        BlockLastSolved = last
+        BlockReading = last
+        nActualTimespan = 0
+        PastBlocks = 45
+        CountBlocks = 0
+        PastDifficultyAverage = 0
+        bnNum = 0
+
+        # DGWv3 PastBlocks = 45 Because checkpoint don't have preblock data.
+        if height == 0:
             return 0x00000FFFF0000000000000000000000000000000000000000000000000000000
-        if index < len(self.checkpoints):
-            h, t, _ = self.checkpoints[index]
-            return t
-        # new target
-        # Litecoin: go back the full period unless it's the first retarget
-        first_timestamp = self.get_timestamp(index * 2016 - 1 if index > 0 else 0)
-        last = self.read_header(index * 2016 + 2015)
-        if not first_timestamp or not last:
-            raise MissingHeader()
-        bits = last.get('bits')
-        target = self.bits_to_target(bits)
-        nActualTimespan = last.get('timestamp') - first_timestamp
-        nTargetTimespan = 84 * 60 * 60
-        nActualTimespan = max(nActualTimespan, nTargetTimespan // 4)
-        nActualTimespan = min(nActualTimespan, nTargetTimespan * 4)
-        new_target = min(MAX_TARGET, (target * nActualTimespan) // nTargetTimespan)
-        # not any target can be represented in 32 bits:
-        new_target = self.bits_to_target(self.target_to_bits(new_target))
-        return new_target
+        if height < PastBlocks:
+            return 0x00000FFFFF000000000000000000000000000000000000000000000000000000
+        #thanks watanabe!! http://askmona.org/5288#res_61
+        if BlockLastSolved is None:
+            return MAX_TARGET
+        for i in range(1, PastBlocks + 1):
+            CountBlocks += 1
+
+            if CountBlocks == 1:
+                PastDifficultyAverage = self.convbignum(BlockReading.get('bits'))
+            else:
+                bnNum = self.convbignum(BlockReading.get('bits'))
+                PastDifficultyAverage = ((PastDifficultyAverage * CountBlocks)+(bnNum)) // (CountBlocks + 1)
+
+            if CountBlocks != PastBlocks:
+                BlockReading = chain.get((height-1) - CountBlocks)
+                if BlockReading is None:
+                    BlockReading = self.read_header((height-1) - CountBlocks)
+
+        nActualTimespan = BlockLastSolved.get('timestamp') - BlockReading.get('timestamp')
+
+        bnNew = PastDifficultyAverage
+        nTargetTimespan = CountBlocks * 40 #1.5 miniutes
+
+        nActualTimespan = max(nActualTimespan, nTargetTimespan//3)
+        nActualTimespan = min(nActualTimespan, nTargetTimespan*3)
+
+        # retarget
+        bnNew *= nActualTimespan
+        bnNew //= nTargetTimespan
+        bnNew = min(bnNew, MAX_TARGET)
+
+        return bnNew
 
     @classmethod
     def bits_to_target(cls, bits: int) -> int:
-        # arith_uint256::SetCompact in Bitcoin Core
-        if not (0 <= bits < (1 << 32)):
-            raise Exception(f"bits should be uint32. got {bits!r}")
         bitsN = (bits >> 24) & 0xff
-        bitsBase = bits & 0x7fffff
-        if bitsN <= 3:
-            target = bitsBase >> (8 * (3-bitsN))
-        else:
-            target = bitsBase << (8 * (bitsN-3))
-        if target != 0 and bits & 0x800000 != 0:
-            # Bit number 24 (0x800000) represents the sign of N
-            raise Exception("target cannot be negative")
-        if (target != 0 and
-                (bitsN > 34 or
-                 (bitsN > 33 and bitsBase > 0xff) or
-                 (bitsN > 32 and bitsBase > 0xffff))):
-            raise Exception("target has overflown")
-        return target
+        if not (0x03 <= bitsN <= 0x1e):
+            raise Exception("First part of bits should be in [0x03, 0x1e]")
+        bitsBase = bits & 0xffffff
+        if not (0x8000 <= bitsBase <= 0x7fffff):
+            raise Exception("Second part of bits should be in [0x8000, 0x7fffff]")
+        return bitsBase << (8 * (bitsN-3))
 
     @classmethod
     def target_to_bits(cls, target: int) -> int:
-        # arith_uint256::GetCompact in Bitcoin Core
-        # see https://github.com/bitcoin/bitcoin/blob/7fcf53f7b4524572d1d0c9a5fdc388e87eb02416/src/arith_uint256.cpp#L223
-        c = target.to_bytes(length=32, byteorder='big')
-        bitsN = len(c)
-        while bitsN > 0 and c[0] == 0:
-            c = c[1:]
-            bitsN -= 1
-            if len(c) < 3:
-                c += b'\x00'
-        bitsBase = int.from_bytes(c[:3], byteorder='big')
+        c = ("%064x" % target)[2:]
+        while c[:2] == '00' and len(c) > 6:
+            c = c[2:]
+        bitsN, bitsBase = len(c) // 2, int.from_bytes(bfh(c[:6]), byteorder='big')
         if bitsBase >= 0x800000:
             bitsN += 1
             bitsBase >>= 8
@@ -646,7 +665,9 @@ class Blockchain(Logger):
         if prev_hash != header.get('prev_block_hash'):
             return False
         try:
-            target = self.get_target(height // 2016 - 1)
+            headers = {}
+            headers[header.get('block_height')] = header
+            target = self.get_target(height, headers)
         except MissingHeader:
             return False
         try:
@@ -672,8 +693,8 @@ class Blockchain(Logger):
         n = self.height() // 2016
         for index in range(n):
             h = self.get_hash((index+1) * 2016 -1)
-            target = self.get_target(index)
-            # Litecoin: also store the timestamp of the last block
+            target = self.get_target(index + 1)
+            # Garlicoin: also store the timestamp of the last block
             tstamp = self.get_timestamp((index+1) * 2016 - 1)
             cp.append((h, target, tstamp))
         return cp

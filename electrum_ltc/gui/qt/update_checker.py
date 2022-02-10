@@ -20,11 +20,11 @@ from electrum_ltc.network import Network
 
 
 class UpdateCheck(QDialog, Logger):
-    url = "https://electrum-ltc.org/version"
-    download_url = "https://electrum-ltc.org/#download"
+    url = "https://wgrlc.com/api/v1/garlium/version"
+    download_url = "https://github.com/garlicoin-project/garlium"
 
     VERSION_ANNOUNCEMENT_SIGNING_KEYS = (
-        "LWZzbv5SbiRRjBDL6dUYRdBX9Dp89RDZgG",
+        "grlc1qxrae36gy8gjwxjtcp8f99xnttxcvkdrq5d0czf",
     )
 
     def __init__(self, *, latest_version=None):
