@@ -333,7 +333,8 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
         return new_path
 
     def has_lightning(self) -> bool:
-        return bool(self.lnworker)
+        # return bool(self.lnworker)
+        return False
 
     def can_have_lightning(self) -> bool:
         # we want static_remotekey to be a wallet address
