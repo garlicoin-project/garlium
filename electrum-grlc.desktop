@@ -1,0 +1,22 @@
+# If you want Electrum to appear in a Linux app launcher ("start menu"), install this by doing:
+# sudo desktop-file-install electrum-grlc.desktop
+
+[Desktop Entry]
+Comment=Lightweight Garlicoin Client
+Exec=sh -c "PATH=\"\\$HOME/.local/bin:\\$PATH\"; electrum-grlc %u"
+GenericName[en_US]=Garlicoin Wallet
+GenericName=Garlicoin Wallet
+Icon=electrum-grlc
+Name[en_US]=Electrum Garlicoin Wallet
+Name=Electrum Garlicoin Wallet
+Categories=Finance;Network;
+StartupNotify=true
+StartupWMClass=electrum-grlc
+Terminal=false
+Type=Application
+MimeType=x-scheme-handler/garlicoin;
+Actions=Testnet;
+
+[Desktop Action Testnet]
+Exec=sh -c "PATH=\"\\$HOME/.local/bin:\\$PATH\"; electrum-grlc --testnet %u"
+Name=Testnet mode

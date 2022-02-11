@@ -6,7 +6,7 @@ import importlib
 from collections import defaultdict
 
 # load version.py; needlessly complicated alternative to "imp.load_source":
-version_spec = importlib.util.spec_from_file_location('version', 'electrum_ltc/version.py')
+version_spec = importlib.util.spec_from_file_location('version', 'electrum_grlc/version.py')
 version_module = importlib.util.module_from_spec(version_spec)
 version_spec.loader.exec_module(version_module)
 
@@ -32,14 +32,14 @@ string = string.replace("##VERSION_ANDROID##", version_android)
 string = string.replace("##VERSION_APK##", APK_VERSION)
 
 files = {
-    'tgz': "Electrum-LTC-%s.tar.gz" % version,
-    'appimage': "electrum-ltc-%s-x86_64.AppImage" % version,
-    'mac': "electrum-ltc-%s.dmg" % version_mac,
-    'win': "electrum-ltc-%s.exe" % version_win,
-    'win_setup': "electrum-ltc-%s-setup.exe" % version_win,
-    'win_portable': "electrum-ltc-%s-portable.exe" % version_win,
-    'apk_arm64': "Electrum-LTC-%s-arm64-v8a-release.apk" % APK_VERSION,
-    'apk_armeabi': "Electrum-LTC-%s-armeabi-v7a-release.apk" % APK_VERSION,
+    'tgz': "Electrum-GRLC-%s.tar.gz" % version,
+    'appimage': "electrum-grlc-%s-x86_64.AppImage" % version,
+    'mac': "electrum-grlc-%s.dmg" % version_mac,
+    'win': "electrum-grlc-%s.exe" % version_win,
+    'win_setup': "electrum-grlc-%s-setup.exe" % version_win,
+    'win_portable': "electrum-grlc-%s-portable.exe" % version_win,
+    'apk_arm64': "Electrum-GRLC-%s-arm64-v8a-release.apk" % APK_VERSION,
+    'apk_armeabi': "Electrum-GRLC-%s-armeabi-v7a-release.apk" % APK_VERSION,
 }
 
 # default signers
@@ -47,7 +47,7 @@ signers = ['ThomasV', 'SomberNight']
 
 for k, n in files.items():
     path = "dist/%s"%n
-    link = "https://download.electrum-ltc.org/%s/%s"%(version,n)
+    link = "https://download.electrum-grlc.org/%s/%s"%(version,n)
     if not os.path.exists(path):
         os.system("wget -q %s -O %s" % (link, path))
     if not os.path.getsize(path):
@@ -56,13 +56,13 @@ for k, n in files.items():
 print("signers:", signers)
 
 gpg_name = lambda x: 'sombernight_releasekey' if x=='SomberNight' else x
-signers_list = ', '.join("<a href=\"https://raw.githubusercontent.com/pooler/electrum-ltc/master/pubkeys/%s.asc\">%s</a>"%(gpg_name(x), x) for x in signers)
+signers_list = ', '.join("<a href=\"https://raw.githubusercontent.com/pooler/electrum-grlc/master/pubkeys/%s.asc\">%s</a>"%(gpg_name(x), x) for x in signers)
 string = string.replace("##signers_list##", signers_list)
 
 for k, filename in files.items():
     path = "dist/%s"%filename
     assert filename in list_dir
-    link = "https://download.electrum-ltc.org/%s/%s"%(version, filename)
+    link = "https://download.electrum-grlc.org/%s/%s"%(version, filename)
     string = string.replace("##link_%s##"%k, link)
     string = string.replace("##sigs_%s##"%k, link+'.asc')
 

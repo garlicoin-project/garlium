@@ -5,7 +5,7 @@ import sys
 import importlib
 
 # load version.py; needlessly complicated alternative to "imp.load_source":
-version_spec = importlib.util.spec_from_file_location('version', 'electrum_ltc/version.py')
+version_spec = importlib.util.spec_from_file_location('version', 'electrum_grlc/version.py')
 version_module = importlib.util.module_from_spec(version_spec)
 version_spec.loader.exec_module(version_module)
 
@@ -19,26 +19,26 @@ cosigner = sys.argv[1]
 version = version_win = version_mac = version_android = ELECTRUM_VERSION
 
 files = {
-    'tgz': "Electrum-LTC-%s.tar.gz" % version,
-    'appimage': "electrum-ltc-%s-x86_64.AppImage" % version,
-    'mac': "electrum-ltc-%s.dmg" % version_mac,
-    'win': "electrum-ltc-%s.exe" % version_win,
-    'win_setup': "electrum-ltc-%s-setup.exe" % version_win,
-    'win_portable': "electrum-ltc-%s-portable.exe" % version_win,
-    'apk_arm64': "Electrum-LTC-%s-arm64-v8a-release.apk" % APK_VERSION,
-    'apk_armeabi': "Electrum-LTC-%s-armeabi-v7a-release.apk" % APK_VERSION,
+    'tgz': "Electrum-GRLC-%s.tar.gz" % version,
+    'appimage': "electrum-grlc-%s-x86_64.AppImage" % version,
+    'mac': "electrum-grlc-%s.dmg" % version_mac,
+    'win': "electrum-grlc-%s.exe" % version_win,
+    'win_setup': "electrum-grlc-%s-setup.exe" % version_win,
+    'win_portable': "electrum-grlc-%s-portable.exe" % version_win,
+    'apk_arm64': "Electrum-GRLC-%s-arm64-v8a-release.apk" % APK_VERSION,
+    'apk_armeabi': "Electrum-GRLC-%s-armeabi-v7a-release.apk" % APK_VERSION,
 }
 
 
 for k, n in files.items():
     path = "dist/%s"%n
-    link = "https://download.electrum-ltc.org/%s/%s"%(version,n)
+    link = "https://download.electrum-grlc.org/%s/%s"%(version,n)
     if not os.path.exists(path):
         os.system("wget -q %s -O %s" % (link, path))
     if not os.path.getsize(path):
         raise Exception(path)
     sig_name = n + '.'+cosigner+'.asc'
-    sig_url = "https://raw.githubusercontent.com/pooler/electrum-ltc-signatures/master/%s/%s/%s"%(version, n, sig_name)
+    sig_url = "https://raw.githubusercontent.com/pooler/electrum-grlc-signatures/master/%s/%s/%s"%(version, n, sig_name)
     sig_path = "dist/%s"% sig_name
     os.system("wget -nc %s -O %s"%(sig_url, sig_path))
     if os.system("gpg --verify %s %s"%(sig_path, path)) != 0:

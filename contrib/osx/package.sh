@@ -24,15 +24,15 @@ export PATH=$PATH:~/bin
 
 
 if [ -z "$1" ]; then
-    echo "Usage: $0 Electrum-LTC.app"
+    echo "Usage: $0 Electrum-GRLC.app"
     exit -127
 fi
 
 mkdir -p ~/bin
 
 if ! which ${genisoimage} > /dev/null 2>&1; then
-	mkdir -p /tmp/electrum-ltc-macos
-	cd /tmp/electrum-ltc-macos
+	mkdir -p /tmp/electrum-grlc-macos
+	cd /tmp/electrum-grlc-macos
 	info "Downloading cdrkit $cdrkit_version"
 	wget -nc ${cdrkit_download_path}/${cdrkit_file_name}
 	tar xvf ${cdrkit_file_name}
@@ -48,8 +48,8 @@ if ! which ${genisoimage} > /dev/null 2>&1; then
 fi
 
 if ! which dmg > /dev/null 2>&1; then
-    mkdir -p /tmp/electrum-ltc-macos
-	cd /tmp/electrum-ltc-macos
+    mkdir -p /tmp/electrum-grlc-macos
+	cd /tmp/electrum-grlc-macos
 	info "Downloading libdmg"
     LD_PRELOAD= git clone ${libdmg_url}
     cd libdmg-hfsplus
@@ -67,9 +67,9 @@ test -f "$plist" || fail "Info.plist not found"
 VERSION=$(grep -1 ShortVersionString $plist |tail -1|gawk 'match($0, /<string>(.*)<\/string>/, a) {print a[1]}')
 echo $VERSION
 
-rm -rf /tmp/electrum-ltc-macos/image > /dev/null 2>&1
-mkdir /tmp/electrum-ltc-macos/image/
-cp -r $1 /tmp/electrum-ltc-macos/image/
+rm -rf /tmp/electrum-grlc-macos/image > /dev/null 2>&1
+mkdir /tmp/electrum-grlc-macos/image/
+cp -r $1 /tmp/electrum-grlc-macos/image/
 
 build_dir=$(dirname "$1")
 test -n "$build_dir" -a -d "$build_dir" || exit
@@ -80,16 +80,16 @@ ${genisoimage} \
     -D \
     -l \
     -probe \
-    -V "Electrum-LTC" \
+    -V "Electrum-GRLC" \
     -no-pad \
     -r \
     -dir-mode 0755 \
     -apple \
-    -o Electrum-LTC_uncompressed.dmg \
-    /tmp/electrum-ltc-macos/image || fail "Unable to create uncompressed dmg"
+    -o Electrum-GRLC_uncompressed.dmg \
+    /tmp/electrum-grlc-macos/image || fail "Unable to create uncompressed dmg"
 
-dmg dmg Electrum-LTC_uncompressed.dmg electrum-ltc-$VERSION.dmg || fail "Unable to create compressed dmg"
-rm Electrum-LTC_uncompressed.dmg
+dmg dmg Electrum-GRLC_uncompressed.dmg electrum-grlc-$VERSION.dmg || fail "Unable to create compressed dmg"
+rm Electrum-GRLC_uncompressed.dmg
 
 echo "Done."
-sha256sum electrum-ltc-$VERSION.dmg
+sha256sum electrum-grlc-$VERSION.dmg
