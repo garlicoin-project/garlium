@@ -22,7 +22,8 @@ hiddenimports += collect_submodules('keepkeylib')
 hiddenimports += collect_submodules('websocket')
 hiddenimports += collect_submodules('ckcc')
 hiddenimports += collect_submodules('bitbox02')
-hiddenimports += ['_scrypt', 'PyQt5.QtPrintSupport']  # needed by Revealer
+
+hiddenimports += ['_allium_hash', '_scrypt', 'PyQt5.QtPrintSupport']  # needed by Revealer
 
 
 binaries = []
@@ -33,6 +34,8 @@ binaries += [b for b in collect_dynamic_libs('PyQt5') if 'qwindowsvista' in b[0]
 binaries += [('C:/tmp/libsecp256k1-0.dll', '.')]
 binaries += [('C:/tmp/libusb-1.0.dll', '.')]
 binaries += [('C:/tmp/libzbar-0.dll', '.')]
+
+binaries += collect_dynamic_libs('PyQt5')
 
 datas = [
     (home+'electrum_grlc/*.json', 'electrum_grlc'),

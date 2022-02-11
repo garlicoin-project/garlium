@@ -578,11 +578,11 @@ def user_dir():
     elif 'ANDROID_DATA' in os.environ:
         return android_data_dir()
     elif os.name == 'posix':
-        return os.path.join(os.environ["HOME"], ".electrum-grlc")
+        return os.path.join(os.environ["HOME"], ".garlium")
     elif "APPDATA" in os.environ:
-        return os.path.join(os.environ["APPDATA"], "Electrum-GRLC")
+        return os.path.join(os.environ["APPDATA"], "Garlium")
     elif "LOCALAPPDATA" in os.environ:
-        return os.path.join(os.environ["LOCALAPPDATA"], "Electrum-GRLC")
+        return os.path.join(os.environ["LOCALAPPDATA"], "Garlium")
     else:
         #raise Exception("No home directory found in environment variables.")
         return

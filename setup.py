@@ -65,7 +65,7 @@ extras_require['fast'] = extras_require['crypto']
 
 
 setup(
-    name="Electrum-GRLC",
+    name="Garlium",
     version=version.ELECTRUM_VERSION,
     python_requires='>={}'.format(MIN_PYTHON_VERSION),
     install_requires=requirements,
