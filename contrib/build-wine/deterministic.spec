@@ -23,7 +23,7 @@ hiddenimports += collect_submodules('websocket')
 hiddenimports += collect_submodules('ckcc')
 hiddenimports += collect_submodules('bitbox02')
 
-hiddenimports += ['_allium_hash', 'allium_hash', 'allium-hash', '_allium-hash', '_scrypt', 'PyQt5.QtPrintSupport']  # needed by Revealer
+hiddenimports += ['_allium_hash', '_scrypt', 'PyQt5.QtPrintSupport']  # needed by Revealer
 
 
 binaries = []
