@@ -134,7 +134,7 @@ exe_portable = EXE(
     a.binaries,
     a.datas + [('is_portable', 'README.md', 'DATA')],
     name=os.path.join('build\\pyi.win32\\electrum-grlc', cmdline_name + "-portable.exe"),
-    debug=True,
+    debug=False,
     strip=None,
     upx=False,
     icon=home+'electrum_grlc/gui/icons/electrum.ico',
