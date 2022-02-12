@@ -11,5 +11,5 @@ attrs>=19.2.0
 # Note that we also need the dnspython[DNSSEC] extra which pulls in cryptography,
 # but as that is not pure-python it cannot be listed in this file!
 dnspython>=2.0
-allium_hash
+allium-hash
 scrypt==0.8.19

@@ -22,7 +22,8 @@ hiddenimports += collect_submodules('keepkeylib')
 hiddenimports += collect_submodules('websocket')
 hiddenimports += collect_submodules('ckcc')
 hiddenimports += collect_submodules('bitbox02')
-hiddenimports += ['_scrypt', 'PyQt5.QtPrintSupport']  # needed by Revealer
+
+hiddenimports += ['_allium_hash', 'allium_hash', 'allium-hash', '_allium-hash', '_scrypt', 'PyQt5.QtPrintSupport']  # needed by Revealer
 
 
 binaries = []
@@ -33,6 +34,8 @@ binaries += [b for b in collect_dynamic_libs('PyQt5') if 'qwindowsvista' in b[0]
 binaries += [('C:/tmp/libsecp256k1-0.dll', '.')]
 binaries += [('C:/tmp/libusb-1.0.dll', '.')]
 binaries += [('C:/tmp/libzbar-0.dll', '.')]
+
+binaries += collect_dynamic_libs('PyQt5')
 
 datas = [
     (home+'electrum_grlc/*.json', 'electrum_grlc'),
@@ -131,7 +134,7 @@ exe_portable = EXE(
     a.binaries,
     a.datas + [('is_portable', 'README.md', 'DATA')],
     name=os.path.join('build\\pyi.win32\\electrum-grlc', cmdline_name + "-portable.exe"),
-    debug=False,
+    debug=True,
     strip=None,
     upx=False,
     icon=home+'electrum_grlc/gui/icons/electrum.ico',
