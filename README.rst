@@ -7,9 +7,9 @@ Electrum-GRLC is a port of Electrum, the Bitcoin wallet, to Garlicoin.
 
   Licence: MIT Licence
   Original Author: Thomas Voegtlin
-  Port Maintainer: Pooler
+  Port Maintainer: Ryan Shaw
   Language: Python (>= 3.6)
-  Homepage: https://electrum-grlc.org/
+  Homepage: https://www.github.com/garlicoin-project
 
 
 
@@ -21,7 +21,7 @@ Getting started
 
 (*If you've come here looking to simply run Electrum,* `you may download it here`_.)
 
-.. _you may download it here: https://electrum-grlc.org/#download
+.. _you may download it here: https://github.com/garlicoin-project/garlium-new/releases
 
 Electrum-GRLC itself is pure Python, and so are most of the required dependencies,
 but not everything. The following sections describe how to run from source, but here
@@ -87,7 +87,7 @@ Development version (git clone)
 
 Check out the code from GitHub::
 
-    git clone git://github.com/pooler/electrum-grlc.git
+    git clone https://github.com/garlicoin-project/garlium-new.git
     cd electrum-grlc
     git submodule update --init
 
@@ -149,10 +149,11 @@ Implementing new features, or improving/refactoring the codebase, is of course
 also welcome, but to avoid wasted effort, especially for larger changes,
 we encourage discussing these on the issue tracker or IRC first.
 
-Besides `GitHub`_, some communication about Electrum-GRLC development happens on IRC, in the
-:code:`#electrum-grlc` channel on Libera Chat. The easiest way to participate on IRC is
-with the web client, `web.libera.chat`_.
+Besides `GitHub`_, some communication about Electrum-GRLC development happens on Discord, in the
+:code:`#public-dev` channel on GRLC'cord. The easiest way to participate on IRC is
+with the web client, `_web.discord_public_dev`_.
 
 
-.. _web.libera.chat: https://web.libera.chat/#electrum-grlc
-.. _GitHub: https://github.com/pooler/electrum-grlc
+.. _web.discord_public_dev: https://discord.gg/XDVbGVRkwx
+.. _GitHub: https://github.com/garlicoin-project/garlium-new
+
