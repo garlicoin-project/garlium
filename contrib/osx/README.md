@@ -30,6 +30,8 @@ We currently build the release binaries on macOS 10.14.6, and these seem to run 
 
 Before starting, you should install `brew`.
 
+If you are using an Apple Sillicon Mac, make sure to `start the terminal in Rosetta mode`.
+- Applications -> Utilities -> Terminal -> Right Click -> Get Info -> check "Open using Rosetta"
 
 #### Notes about reproducibility
 

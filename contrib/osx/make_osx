@@ -102,12 +102,12 @@ python3 --version
 echo -n "Pyinstaller "
 pyinstaller --version
 
-rm -rf ./dist
+sudo rm -rf ./dist
 
 git submodule update --init
 
-rm  -rf "$BUILDDIR" > /dev/null 2>&1
-mkdir "$BUILDDIR"
+sudo rm  -rf "$BUILDDIR" > /dev/null 2>&1
+sudo mkdir "$BUILDDIR"
 
 info "generating locale"
 (
@@ -147,7 +147,7 @@ cp "$PROJECT_ROOT"/electrum_grlc/libzbar.0.dylib "$CONTRIB"/osx
 
 if [ ! -f "$PROJECT_ROOT"/electrum_grlc/libusb-1.0.dylib ]; then
     info "Building libusb dylib..."
-    "$CONTRIB"/make_libusb.sh || fail "Could not build libusb dylib"
+    sudo "$CONTRIB"/make_libusb.sh || fail "Could not build libusb dylib"
 else
     info "Skipping libusb build: reusing already built dylib."
 fi
@@ -173,15 +173,15 @@ info "Building $PACKAGE..."
 python3 -m pip install --no-dependencies --no-warn-script-location . > /dev/null || fail "Could not build $PACKAGE"
 
 info "Faking timestamps..."
-find . -exec touch -t '200101220000' {} + || true
+sudo find . -exec touch -t '200101220000' {} + || true
 
 VERSION=`git describe --tags --dirty --always`
 
 info "Building binary"
-pyinstaller --noconfirm --ascii --clean --name $VERSION contrib/osx/osx.spec || fail "Could not build binary"
+sudo pyinstaller --noconfirm --ascii --clean --name $VERSION contrib/osx/osx.spec || fail "Could not build binary"
 
 info "Adding garlicoin URI types to Info.plist"
-plutil -insert 'CFBundleURLTypes' \
+sudo plutil -insert 'CFBundleURLTypes' \
 	-xml '<array><dict> <key>CFBundleURLName</key> <string>garlicoin</string> <key>CFBundleURLSchemes</key> <array><string>garlicoin</string></array> </dict></array>' \
 	-- dist/$PACKAGE.app/Contents/Info.plist \
 	|| fail "Could not add keys to Info.plist. Make sure the program 'plutil' exists and is installed."
@@ -198,7 +198,7 @@ if [ ! -z "$CODESIGN_CERT" ]; then
 fi
 
 info "Creating .DMG"
-hdiutil create -fs HFS+ -volname $PACKAGE -srcfolder dist/$PACKAGE.app dist/electrum-grlc-$VERSION.dmg || fail "Could not create .DMG"
+sudo hdiutil create -fs HFS+ -volname $PACKAGE -srcfolder dist/$PACKAGE.app dist/electrum-grlc-$VERSION.dmg || fail "Could not create .DMG"
 
 DoCodeSignMaybe ".DMG" "dist/electrum-grlc-${VERSION}.dmg"
 
